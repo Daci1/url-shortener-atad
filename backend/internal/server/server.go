@@ -11,8 +11,11 @@ func NewServer() *echo.Echo {
 	apiV1 := e.Group("/api/v1")
 
 	pingHandler := handler.NewPingHandler()
+	urlHandler := handler.NewUrlHandler()
 
 	apiV1.GET("/ping", pingHandler.Ping)
+
+	apiV1.GET("/urls/:url", urlHandler.GenerateShortenedUrl)
 
 	return e
 }
