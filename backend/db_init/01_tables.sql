@@ -5,10 +5,10 @@ CREATE SEQUENCE IF NOT EXISTS url_counter
     MAXVALUE 56800235583  -- 62^6 - 1, max 6-character Base62 short code
     NO CYCLE;
 
-CREATE TABLE if NOT EXISTS urls (
-    id SERIAL PRIMARY KEY,
-    short_url BIGINT UNIQUE NOT NULL,
+CREATE TABLE IF NOT EXISTS urls (
+    id UUID PRIMARY KEY,
+    short_url CHAR(6) UNIQUE NOT NULL,
     original_url TEXT NOT NULL,
-    created_at TIMESTAMP DEFAULT NOW(),
+    created_at TIMESTAMP NOT NULL,
     deleted_at TIMESTAMP
 );

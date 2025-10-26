@@ -14,8 +14,8 @@ func NewServer() *echo.Echo {
 	urlHandler := handler.NewUrlHandler()
 
 	apiV1.GET("/ping", pingHandler.Ping)
-
-	apiV1.GET("/urls/:url", urlHandler.GenerateShortenedUrl)
+	apiV1.GET("/urls/:url", urlHandler.RedirectUrl)
+	apiV1.POST("/urls", urlHandler.GenerateShortenedUrl)
 
 	return e
 }
