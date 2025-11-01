@@ -24,3 +24,20 @@ type UrlAttributes struct {
 	CreatedAt   string `json:"createdAt"`
 	DeletedAt   string `json:"deletedAt,omitempty"`
 }
+
+type RegisterRequestAttributes struct {
+	Email    string `json:"email"`
+	Username string `json:"username"`
+	Password string `json:"password"`
+}
+
+type LoginRequestAttributes struct {
+	Email    string `json:"email"`
+	Password string `json:"password"`
+}
+
+type CredentialsResponseAttributes struct {
+	Username     string `json:"username"`
+	Token        string `json:"token"`
+	RefreshToken string `json:"refreshToken"`
+}

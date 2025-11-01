@@ -33,7 +33,7 @@ func (s *UrlService) CreateUrl(originalUrl string) (*response.APIResponse[respon
 		CreatedAt:   time.Now(),
 	}
 
-	err = db.CreateUrl(*urlEntity)
+	err = s.urlRepository.CreateUrl(*urlEntity)
 	if err != nil {
 		return nil, err
 	}

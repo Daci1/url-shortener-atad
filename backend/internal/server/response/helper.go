@@ -22,5 +22,12 @@ func UrlAttributesFromEntity(entity db.UrlEntity) UrlAttributes {
 		CreatedAt:   entity.CreatedAt.UTC().String(),
 		DeletedAt:   helper.If(entity.DeletedAt.Valid, entity.DeletedAt.Time.String(), ""),
 	}
+}
 
+func ToCredentialsResponseAttributes(username, token, refreshToken string) CredentialsResponseAttributes {
+	return CredentialsResponseAttributes{
+		Username:     username,
+		Token:        token,
+		RefreshToken: refreshToken,
+	}
 }

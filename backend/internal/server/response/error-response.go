@@ -1,6 +1,9 @@
 package response
 
-import "net/http"
+import (
+	"github.com/Daci1/url-shortener-atad/internal/errs"
+	"net/http"
+)
 
 type ErrorResponse struct {
 	Error ErrorDetail `json:"error"`
@@ -22,4 +25,8 @@ func NewErrorResponse(status int16, description string) *ErrorResponse {
 
 func NewInternalServerErrorResponse() *ErrorResponse {
 	return NewErrorResponse(http.StatusInternalServerError, "Internal server error.")
+}
+
+func NewErrorFromCustomError(err errs.CustomError) *ErrorResponse {
+	return NewErrorResponse(int16(err.Status()), err.Message())
 }
