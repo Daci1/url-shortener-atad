@@ -71,5 +71,16 @@ func (r *UrlRepository) CreateUrl(entity UrlEntity) error {
 		entity.CreatedAt,
 	)
 	return err
+}
 
+func (r *UrlRepository) CreateUrlWithUser(entity UrlEntity) error {
+	_, err := r.db.Exec(
+		"INSERT INTO urls (id, short_url, original_url, user_id, created_at) VALUES ($1, $2, $3, $4, $5)",
+		entity.Id,
+		entity.ShortUrl,
+		entity.OriginalUrl,
+		entity.UserId,
+		entity.CreatedAt,
+	)
+	return err
 }

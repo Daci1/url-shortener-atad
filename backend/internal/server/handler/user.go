@@ -25,15 +25,14 @@ func (h *UserHandler) RegisterUser(c echo.Context) error {
 	var req response.ApiRequest[response.RegisterRequestAttributes]
 	if err := c.Bind(&req); err != nil {
 		fmt.Println(err)
-		return c.JSON(http.StatusBadRequest, response.NewErrorResponse(http.StatusBadRequest, "Invalid request body"))
+		return c.JSON(response.NewErrorResponse(http.StatusBadRequest, "Invalid request body"))
 	}
 
-	// TODO: add error handling for register user
 	res, err := h.s.RegisterUser(req.Data.Attributes)
 
 	if err != nil {
 		fmt.Println(err)
-		return c.JSON(http.StatusInternalServerError, response.NewInternalServerErrorResponse())
+		return c.JSON(response.NewErrorFromCustomError(err))
 	}
 
 	return c.JSON(http.StatusCreated, res)
@@ -43,7 +42,7 @@ func (h *UserHandler) LoginUser(c echo.Context) error {
 	var req response.ApiRequest[response.LoginRequestAttributes]
 	if err := c.Bind(&req); err != nil {
 		fmt.Println(err)
-		return c.JSON(http.StatusBadRequest, response.NewErrorResponse(http.StatusBadRequest, "Invalid request body"))
+		return c.JSON(response.NewErrorResponse(http.StatusBadRequest, "Invalid request body"))
 	}
 
 	// TODO: add error handling for register user
@@ -51,7 +50,7 @@ func (h *UserHandler) LoginUser(c echo.Context) error {
 
 	if err != nil {
 		fmt.Println(err)
-		return c.JSON(err.Status(), response.NewErrorFromCustomError(err))
+		return c.JSON(response.NewErrorFromCustomError(err))
 	}
 
 	return c.JSON(http.StatusCreated, res)

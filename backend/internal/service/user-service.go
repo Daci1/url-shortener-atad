@@ -3,7 +3,7 @@ package service
 import (
 	"fmt"
 	"github.com/Daci1/url-shortener-atad/internal/errs"
-	"github.com/Daci1/url-shortener-atad/internal/hash"
+	"github.com/Daci1/url-shortener-atad/internal/security"
 	"time"
 
 	"github.com/Daci1/url-shortener-atad/internal/db"
@@ -23,7 +23,7 @@ func NewUserService(userRepo *db.UserRepository) *UserService {
 
 func (s *UserService) RegisterUser(req response.RegisterRequestAttributes) (*response.APIResponse[response.CredentialsResponseAttributes], errs.CustomError) {
 	// TODO: add email validation
-	password, err := hash.HashPassword(req.Password)
+	password, err := security.HashPassword(req.Password)
 	if err != nil {
 		return nil, errs.Internal(fmt.Sprintf("Error while encrypting password: %s", err.Error()))
 	}
@@ -35,13 +35,17 @@ func (s *UserService) RegisterUser(req response.RegisterRequestAttributes) (*res
 		CreatedAt:    time.Now(),
 	}
 
-	customError := s.userRepository.RegisterUser(*userEntity)
+	entity, customError := s.userRepository.RegisterUser(userEntity)
 	if customError != nil {
 		return nil, customError
 	}
 
-	// TODO: create jwt token and refresh token
-	attributes := response.ToCredentialsResponseAttributes(req.Username, "", "")
+	tokenPairs, err := security.GenerateTokens(entity.Id, entity.Username)
+	if err != nil {
+		return nil, errs.Internal(fmt.Sprintf("Error while creating token pairs: %s", tokenPairs))
+	}
+
+	attributes := response.ToCredentialsResponseAttributes(req.Username, tokenPairs.Token, tokenPairs.RefreshToken)
 	return response.New("users", attributes), nil
 }
 
@@ -51,12 +55,16 @@ func (s *UserService) LoginUser(req response.LoginRequestAttributes) (*response.
 		return nil, customError
 	}
 
-	if !hash.CheckPassword(entity.PasswordHash, req.Password) {
+	if !security.CheckPassword(entity.PasswordHash, req.Password) {
 		// TODO: make this the same as when user not found
 		return nil, errs.Unauthorized("invalid credentials")
 	}
 
-	// TODO: create jwt token and refresh token
-	attributes := response.ToCredentialsResponseAttributes(entity.Username, "", "")
+	tokenPairs, err := security.GenerateTokens(entity.Id, entity.Username)
+	if err != nil {
+		return nil, errs.Internal(fmt.Sprintf("Error while creating token pairs: %s", tokenPairs))
+	}
+
+	attributes := response.ToCredentialsResponseAttributes(entity.Username, tokenPairs.Token, tokenPairs.RefreshToken)
 	return response.New("users", attributes), nil
 }

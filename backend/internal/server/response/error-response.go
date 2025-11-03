@@ -14,19 +14,21 @@ type ErrorDetail struct {
 	Description string `json:"description"`
 }
 
-func NewErrorResponse(status int16, description string) *ErrorResponse {
-	return &ErrorResponse{
+func NewErrorResponse(status int16, description string) (int, *ErrorResponse) {
+	errorResponse := &ErrorResponse{
 		Error: ErrorDetail{
 			Status:      status,
 			Description: description,
 		},
 	}
+
+	return int(status), errorResponse
 }
 
-func NewInternalServerErrorResponse() *ErrorResponse {
+func NewInternalServerErrorResponse() (int, *ErrorResponse) {
 	return NewErrorResponse(http.StatusInternalServerError, "Internal server error.")
 }
 
-func NewErrorFromCustomError(err errs.CustomError) *ErrorResponse {
+func NewErrorFromCustomError(err errs.CustomError) (int, *ErrorResponse) {
 	return NewErrorResponse(int16(err.Status()), err.Message())
 }

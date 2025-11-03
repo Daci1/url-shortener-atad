@@ -19,6 +19,7 @@ func UrlAttributesFromEntity(entity db.UrlEntity) UrlAttributes {
 		Id:          entity.Id,
 		ShortUrl:    entity.ShortUrl,
 		OriginalUrl: entity.OriginalUrl,
+		UserId:      entity.UserId,
 		CreatedAt:   entity.CreatedAt.UTC().String(),
 		DeletedAt:   helper.If(entity.DeletedAt.Valid, entity.DeletedAt.Time.String(), ""),
 	}

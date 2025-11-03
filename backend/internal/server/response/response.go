@@ -23,6 +23,7 @@ type UrlAttributes struct {
 	OriginalUrl string `json:"originalUrl"`
 	CreatedAt   string `json:"createdAt"`
 	DeletedAt   string `json:"deletedAt,omitempty"`
+	UserId      string `json:"userId,omitempty"`
 }
 
 type RegisterRequestAttributes struct {

@@ -1,7 +1,10 @@
 package server
 
 import (
+	"github.com/Daci1/url-shortener-atad/internal/security"
 	"github.com/Daci1/url-shortener-atad/internal/server/handler"
+	"github.com/Daci1/url-shortener-atad/internal/server/middleware"
+	echojwt "github.com/labstack/echo-jwt/v4"
 	"github.com/labstack/echo/v4"
 )
 
@@ -14,13 +17,19 @@ func NewServer() *echo.Echo {
 	userHandler := handler.NewUserHandler()
 	urlHandler := handler.NewUrlHandler()
 
-	apiV1.GET("/ping", pingHandler.Ping)
-	apiV1.GET("/urls/:url", urlHandler.RedirectUrl)
-	apiV1.POST("/urls", urlHandler.GenerateShortenedUrl)
-
+	// Public endpoints
 	apiV1.POST("/users", userHandler.RegisterUser)
 	apiV1.POST("/users/login", userHandler.LoginUser)
-	// TODO: add create url for user
+	apiV1.GET("/ping", pingHandler.Ping)
+	apiV1.POST("/urls", urlHandler.GenerateShortenedUrl)
+	apiV1.GET("/urls/:url", urlHandler.RedirectUrl)
+
+	// Authenticated endpoints
+	authGroupV1 := apiV1.Group("")
+	authGroupV1.Use(echojwt.JWT(security.AccessTokenSecret))
+	authGroupV1.POST("/urls/users/:user", urlHandler.CreateUrlForUser, middleware.UserMatchesToken)
+
+	// TODO: add refresh token endpoint
 
 	return e
 }

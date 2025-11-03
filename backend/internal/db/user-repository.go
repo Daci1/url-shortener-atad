@@ -18,8 +18,8 @@ func NewUserRepository(db *sql.DB) *UserRepository {
 	}
 }
 
-func (r *UserRepository) RegisterUser(entity UserEntity) errs.CustomError {
-	_, err := r.db.Exec(
+func (r *UserRepository) RegisterUser(entity *UserEntity) (*UserEntity, errs.CustomError) {
+	_, err := r.db.Query(
 		"INSERT INTO users (id, email, username, password_hash, created_at) VALUES ($1, $2, $3, $4, $5)",
 		entity.Id,
 		entity.Email,
@@ -33,14 +33,14 @@ func (r *UserRepository) RegisterUser(entity UserEntity) errs.CustomError {
 		if errors.As(err, &pgErr) {
 			if pgErr.Code == "23505" {
 				// Unique constraint violation
-				return errs.Conflict("user already exists")
+				return nil, errs.Conflict("user already exists")
 			}
 		}
 
-		return errs.Internal(fmt.Sprintf("failed to create user: %s", err.Error()))
+		return nil, errs.Internal(fmt.Sprintf("failed to create user: %s", err.Error()))
 	}
 
-	return nil
+	return entity, nil
 }
 
 func (r *UserRepository) GetUserByEmail(email string) (*UserEntity, errs.CustomError) {
