@@ -28,6 +28,7 @@ func NewServer() *echo.Echo {
 	authGroupV1 := apiV1.Group("")
 	authGroupV1.Use(echojwt.JWT(security.AccessTokenSecret))
 	authGroupV1.POST("/urls/users/:user", urlHandler.CreateUrlForUser, middleware.UserMatchesToken)
+	authGroupV1.POST("/urls/users/:user/custom", urlHandler.CreateCustomUrl, middleware.UserMatchesToken)
 
 	// TODO: add refresh token endpoint
 

@@ -22,7 +22,7 @@ func GenerateTokens(userId, username string) (*TokenPair, error) {
 	accessTokenClaims := jwt.MapClaims{
 		"sub":      userId,
 		"username": username,
-		"exp":      time.Now().Add(15 * time.Minute).Unix(), // expires in 15 mins
+		"exp":      time.Now().Add(1000 * time.Minute).Unix(), // TODO: expires in 15 mins
 		"iat":      time.Now().Unix(),
 	}
 	accessToken := jwt.NewWithClaims(jwt.SigningMethodHS256, accessTokenClaims)

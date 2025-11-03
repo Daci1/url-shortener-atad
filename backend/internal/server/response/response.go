@@ -17,6 +17,11 @@ type CreateUrlRequestAttributes struct {
 	OriginalUrl string `json:"originalUrl"`
 }
 
+type CreateCustomUrlRequestAttributes struct {
+	OriginalUrl string `json:"originalUrl"`
+	DesiredUrl  string `json:"desiredUrl"`
+}
+
 type UrlAttributes struct {
 	Id          string `json:"-"`
 	ShortUrl    string `json:"shortUrl"`

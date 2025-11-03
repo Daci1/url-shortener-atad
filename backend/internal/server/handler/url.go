@@ -31,7 +31,7 @@ func (h *UrlHandler) RedirectUrl(c echo.Context) error {
 	originalUrl, err := h.s.GetUrl(shortUrl)
 	if err != nil {
 		fmt.Println(err)
-		return c.JSON(response.NewInternalServerErrorResponse())
+		return c.JSON(response.NewErrorFromCustomError(err))
 	}
 
 	if originalUrl == "" {
@@ -83,6 +83,33 @@ func (h *UrlHandler) CreateUrlForUser(c echo.Context) error {
 	if customError != nil {
 		fmt.Println(customError)
 		return c.JSON(response.NewInternalServerErrorResponse())
+	}
+
+	return c.JSON(http.StatusCreated, res)
+}
+
+func (h *UrlHandler) CreateCustomUrl(c echo.Context) error {
+	var req response.ApiRequest[response.CreateCustomUrlRequestAttributes]
+	if err := c.Bind(&req); err != nil {
+		fmt.Println(err)
+		return c.JSON(response.NewErrorResponse(http.StatusBadRequest, "Invalid request body"))
+	}
+
+	originalUrl, desiredUrl, userId := req.Data.Attributes.OriginalUrl, req.Data.Attributes.DesiredUrl, c.Param("user")
+
+	if originalUrl == "" {
+		return c.JSON(response.NewErrorResponse(http.StatusBadRequest, "Empty url not allowed"))
+	}
+
+	if desiredUrl == "" || len(desiredUrl) != shortener.MaxUrlLength {
+		return c.JSON(response.NewErrorResponse(http.StatusBadRequest, "Invalid desired url"))
+	}
+
+	res, customError := h.s.CreateCustomUrl(originalUrl, desiredUrl, userId)
+
+	if customError != nil {
+		fmt.Println(customError)
+		return c.JSON(response.NewErrorFromCustomError(customError))
 	}
 
 	return c.JSON(http.StatusCreated, res)

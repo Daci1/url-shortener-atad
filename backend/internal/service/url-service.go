@@ -7,7 +7,6 @@ import (
 
 	"github.com/Daci1/url-shortener-atad/internal/db"
 	"github.com/Daci1/url-shortener-atad/internal/server/response"
-	"github.com/Daci1/url-shortener-atad/internal/shortener"
 	"github.com/google/uuid"
 )
 
@@ -22,11 +21,10 @@ func NewUrlService(urlRepo *db.UrlRepository) *UrlService {
 }
 
 func (s *UrlService) CreateUrl(originalUrl string) (*response.APIResponse[response.UrlAttributes], errs.CustomError) {
-	currentCounter, err := s.urlRepository.GetCounterAndIncrement()
+	shortUrl, err := s.urlRepository.GetNextAvailableShortUrl()
 	if err != nil {
-		return nil, errs.Internal(fmt.Sprintf("Error while retrieving counter: %s", err.Error()))
+		return nil, errs.Internal(fmt.Sprintf("Error while retrieving next available url: %s", err.Error()))
 	}
-	shortUrl := shortener.ToBase62(currentCounter)
 
 	urlEntity := &db.UrlEntity{
 		Id:          uuid.NewString(),
@@ -45,11 +43,10 @@ func (s *UrlService) CreateUrl(originalUrl string) (*response.APIResponse[respon
 }
 
 func (s *UrlService) CreateUrlWithUser(originalUrl, userId string) (*response.APIResponse[response.UrlAttributes], errs.CustomError) {
-	currentCounter, err := s.urlRepository.GetCounterAndIncrement()
+	shortUrl, err := s.urlRepository.GetNextAvailableShortUrl()
 	if err != nil {
 		return nil, errs.Internal(fmt.Sprintf("Error while retrieving counter: %s", err.Error()))
 	}
-	shortUrl := shortener.ToBase62(currentCounter)
 
 	urlEntity := &db.UrlEntity{
 		Id:          uuid.NewString(),
@@ -68,8 +65,35 @@ func (s *UrlService) CreateUrlWithUser(originalUrl, userId string) (*response.AP
 	return response.New("urls", attributes), nil
 }
 
-func (s *UrlService) GetUrl(shortUrl string) (string, error) {
-	urlEntity, err := s.urlRepository.GetByShortUrl(shortUrl)
+func (s *UrlService) CreateCustomUrl(originalUrl, desiredUrl, userId string) (*response.APIResponse[response.UrlAttributes], errs.CustomError) {
+	shortUrlExists, err := s.urlRepository.ShortUrlExists(desiredUrl)
+	if err != nil {
+		return nil, err
+	}
+
+	if shortUrlExists {
+		return nil, errs.Conflict("Short url already exists")
+	}
+
+	urlEntity := &db.UrlEntity{
+		Id:          uuid.NewString(),
+		ShortUrl:    desiredUrl,
+		OriginalUrl: originalUrl,
+		UserId:      userId,
+		CreatedAt:   time.Now(),
+	}
+
+	err = s.urlRepository.CreateUrlWithUser(*urlEntity)
+	if err != nil {
+		return nil, errs.Internal(fmt.Sprintf("Error while creating url: %s", err.Error()))
+	}
+
+	attributes := response.UrlAttributesFromEntity(*urlEntity)
+	return response.New("urls", attributes), nil
+}
+
+func (s *UrlService) GetUrl(shortUrl string) (string, errs.CustomError) {
+	urlEntity, err := s.urlRepository.GetByShortUrlAndIncrementAnalytics(shortUrl)
 	if err != nil {
 		return "", err
 	}
