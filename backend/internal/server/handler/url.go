@@ -5,9 +5,11 @@ import (
 	"net/http"
 
 	"github.com/Daci1/url-shortener-atad/internal/db"
+	"github.com/Daci1/url-shortener-atad/internal/helper"
 	"github.com/Daci1/url-shortener-atad/internal/server/response"
 	"github.com/Daci1/url-shortener-atad/internal/service"
 	"github.com/Daci1/url-shortener-atad/internal/shortener"
+	"github.com/Daci1/url-shortener-atad/internal/types"
 	"github.com/labstack/echo/v4"
 )
 
@@ -28,7 +30,9 @@ func (h *UrlHandler) RedirectUrl(c echo.Context) error {
 		return c.JSON(response.NewErrorResponse(http.StatusBadRequest, "Invalid short url"))
 	}
 
-	originalUrl, err := h.s.GetUrl(shortUrl)
+	requestIp := helper.ExtractClientIP(c.Request())
+
+	originalUrl, err := h.s.GetUrl(shortUrl, requestIp)
 	if err != nil {
 		fmt.Println(err)
 		return c.JSON(response.NewErrorFromCustomError(err))
@@ -38,11 +42,11 @@ func (h *UrlHandler) RedirectUrl(c echo.Context) error {
 		return c.JSON(response.NewErrorResponse(http.StatusNotFound, "Short url not found"))
 	}
 
-	return c.Redirect(http.StatusMovedPermanently, originalUrl)
+	return c.Redirect(http.StatusTemporaryRedirect, originalUrl)
 }
 
 func (h *UrlHandler) GenerateShortenedUrl(c echo.Context) error {
-	var req response.ApiRequest[response.CreateUrlRequestAttributes]
+	var req types.ApiRequest[types.CreateUrlRequestAttributes]
 	if err := c.Bind(&req); err != nil {
 		fmt.Println(err)
 		return c.JSON(response.NewErrorResponse(http.StatusBadRequest, "Invalid request body"))
@@ -65,7 +69,7 @@ func (h *UrlHandler) GenerateShortenedUrl(c echo.Context) error {
 }
 
 func (h *UrlHandler) CreateUrlForUser(c echo.Context) error {
-	var req response.ApiRequest[response.CreateUrlRequestAttributes]
+	var req types.ApiRequest[types.CreateUrlRequestAttributes]
 	// TODO: maybe extract this in a function
 	if err := c.Bind(&req); err != nil {
 		fmt.Println(err)
@@ -89,7 +93,7 @@ func (h *UrlHandler) CreateUrlForUser(c echo.Context) error {
 }
 
 func (h *UrlHandler) CreateCustomUrl(c echo.Context) error {
-	var req response.ApiRequest[response.CreateCustomUrlRequestAttributes]
+	var req types.ApiRequest[types.CreateCustomUrlRequestAttributes]
 	if err := c.Bind(&req); err != nil {
 		fmt.Println(err)
 		return c.JSON(response.NewErrorResponse(http.StatusBadRequest, "Invalid request body"))

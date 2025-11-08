@@ -24,8 +24,29 @@ CREATE TABLE IF NOT EXISTS urls (
     CONSTRAINT fk_user FOREIGN KEY (user_id) REFERENCES users (id) ON DELETE CASCADE
 );
 
+-- TODO: analytics is redundant since it's calculable from sum of ip_locations visited_counter,
+--  decide on this
 CREATE TABLE IF NOT EXISTS analytics (
     url_id UUID PRIMARY KEY,
-    visited_count INTEGER NOT NULL DEFAULT 0,
+    visited_count INTEGER NOT NULL,
     CONSTRAINT fk_url FOREIGN KEY (url_id) REFERENCES urls (id) ON DELETE CASCADE
+);
+
+CREATE TABLE IF NOT EXISTS unique_visitors (
+    url_id UUID PRIMARY KEY,
+    visitor_ip INET NOT NULL,
+    visited_count INTEGER NOT NULL,
+    CONSTRAINT fk_url_visitor FOREIGN KEY (url_id) REFERENCES urls (id) ON DELETE CASCADE
+);
+
+CREATE TABLE IF NOT EXISTS ip_locations (
+    city VARCHAR(100),
+    region VARCHAR(100),
+    country VARCHAR(100),
+    latitude DOUBLE PRECISION,
+    longitude DOUBLE PRECISION,
+    url_id UUID NOT NULL,
+    visited_counter INTEGER NOT NULL,
+    CONSTRAINT fk_url_visitor FOREIGN KEY (url_id) REFERENCES urls (id) ON DELETE CASCADE,
+    CONSTRAINT unique_location_per_url UNIQUE (city, region, country, latitude, longitude, url_id)
 );

@@ -4,7 +4,10 @@ import (
 	"database/sql"
 	"errors"
 	"fmt"
+	"net"
+
 	"github.com/Daci1/url-shortener-atad/internal/errs"
+	"github.com/Daci1/url-shortener-atad/internal/helper"
 	"github.com/Daci1/url-shortener-atad/internal/shortener"
 )
 
@@ -60,20 +63,9 @@ func (r *UrlRepository) ShortUrlExists(shortUrl string) (bool, errs.CustomError)
 	return exists, nil
 }
 
-func (r *UrlRepository) GetByShortUrlAndIncrementAnalytics(url string) (*UrlEntity, errs.CustomError) {
-	tx, err := r.db.Begin()
-	if err != nil {
-		return nil, errs.Internal(fmt.Sprintf("Error creating transaction: %s", err))
-	}
-	defer func() {
-		if err != nil {
-			tx.Rollback()
-		} else {
-			tx.Commit()
-		}
-	}()
+func (r *UrlRepository) GetByShortUrlAndIncrementAnalytics(url, requestIp string) (*UrlEntity, errs.CustomError) {
 	var entity UrlEntity
-	err = tx.QueryRow(
+	err := r.db.QueryRow(
 		"SELECT id, short_url, original_url, created_at, deleted_at FROM urls WHERE short_url = $1",
 		url,
 	).Scan(
@@ -90,7 +82,7 @@ func (r *UrlRepository) GetByShortUrlAndIncrementAnalytics(url string) (*UrlEnti
 		return nil, errs.Internal(fmt.Sprintf("Error querying urls: %s", err))
 	}
 
-	_, err = tx.Exec(`
+	_, err = r.db.Exec(`
 		INSERT INTO analytics (url_id, visited_count)
 		VALUES ($1, 1)
 		ON CONFLICT (url_id)
@@ -98,10 +90,69 @@ func (r *UrlRepository) GetByShortUrlAndIncrementAnalytics(url string) (*UrlEnti
 	`, entity.Id)
 
 	if err != nil {
-		return nil, errs.Internal(fmt.Sprintf("Error incrementing analytics: %s", err))
+		return &entity, errs.Internal(fmt.Sprintf("Error incrementing analytics: %s", err))
+	}
+
+	if requestIp != "" {
+		err = r.upsertUniqueVisitor(&entity, requestIp)
+		if err != nil {
+			return &entity, errs.Internal(fmt.Sprintf("Error registering unique visitor: %s", err))
+		}
+		if !helper.IsPrivateIP(net.ParseIP(requestIp)) {
+			err = r.upsertGeolocation(&entity, requestIp)
+			if err != nil {
+				return &entity, errs.Internal(fmt.Sprintf("Error registering geolocation: %s", err))
+			}
+		}
 	}
 
 	return &entity, nil
+}
+
+func (r *UrlRepository) upsertUniqueVisitor(urlEntity *UrlEntity, requestIp string) errs.CustomError {
+	_, err := r.db.Exec(`
+		INSERT INTO unique_visitors (url_id, visitor_ip, visited_count)
+		VALUES ($1, $2, 1)
+		ON CONFLICT (url_id)
+		DO UPDATE SET visited_count = unique_visitors.visited_count + 1,
+		              visitor_ip = EXCLUDED.visitor_ip
+		`,
+		urlEntity.Id,
+		requestIp,
+	)
+
+	if err != nil {
+		return errs.Internal("Failed to persist visitor data")
+	}
+	return nil
+}
+
+func (r *UrlRepository) upsertGeolocation(urlEntity *UrlEntity, requestIp string) errs.CustomError {
+	geoData, err := helper.GetGeoData(requestIp)
+	if geoData == nil {
+		return errs.Internal("Failed to retrieve geolocation data")
+	}
+	_, err = r.db.Exec(`
+	INSERT INTO ip_locations (
+		city, region, country, latitude, longitude, url_id, visited_counter
+	)
+	VALUES ($1, $2, $3, $4, $5, $6, 1)
+	ON CONFLICT (city, region, country, latitude, longitude, url_id)
+	DO UPDATE SET
+		visited_counter = ip_locations.visited_counter + 1
+	`,
+		geoData.City,
+		geoData.Region,
+		geoData.Country,
+		geoData.Latitude,
+		geoData.Longitude,
+		urlEntity.Id,
+	)
+
+	if err != nil {
+		return errs.Internal("Failed to persist geolocation data")
+	}
+	return nil
 }
 
 func (r *UrlRepository) CreateUrl(entity UrlEntity) errs.CustomError {
@@ -112,7 +163,10 @@ func (r *UrlRepository) CreateUrl(entity UrlEntity) errs.CustomError {
 		entity.OriginalUrl,
 		entity.CreatedAt,
 	)
-	return errs.Internal(fmt.Sprintf("Error creating url: %s", err))
+	if err != nil {
+		return errs.Internal(fmt.Sprintf("Error creating url: %s", err))
+	}
+	return nil
 }
 
 func (r *UrlRepository) CreateUrlWithUser(entity UrlEntity) errs.CustomError {

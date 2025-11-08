@@ -1,4 +1,4 @@
-package response
+package types
 
 type APIResponse[T any] struct {
 	Data Data[T] `json:"data"`

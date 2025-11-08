@@ -7,6 +7,7 @@ import (
 	"github.com/Daci1/url-shortener-atad/internal/db"
 	"github.com/Daci1/url-shortener-atad/internal/server/response"
 	"github.com/Daci1/url-shortener-atad/internal/service"
+	"github.com/Daci1/url-shortener-atad/internal/types"
 	"github.com/labstack/echo/v4"
 )
 
@@ -22,7 +23,7 @@ func NewUserHandler() *UserHandler {
 }
 
 func (h *UserHandler) RegisterUser(c echo.Context) error {
-	var req response.ApiRequest[response.RegisterRequestAttributes]
+	var req types.ApiRequest[types.RegisterRequestAttributes]
 	if err := c.Bind(&req); err != nil {
 		fmt.Println(err)
 		return c.JSON(response.NewErrorResponse(http.StatusBadRequest, "Invalid request body"))
@@ -39,7 +40,7 @@ func (h *UserHandler) RegisterUser(c echo.Context) error {
 }
 
 func (h *UserHandler) LoginUser(c echo.Context) error {
-	var req response.ApiRequest[response.LoginRequestAttributes]
+	var req types.ApiRequest[types.LoginRequestAttributes]
 	if err := c.Bind(&req); err != nil {
 		fmt.Println(err)
 		return c.JSON(response.NewErrorResponse(http.StatusBadRequest, "Invalid request body"))
