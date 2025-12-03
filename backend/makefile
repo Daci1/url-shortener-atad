@@ -6,3 +6,6 @@ clean-restart-db:
 
 restart-db:
 	docker compose down && docker compose up -d
+
+clean-db:
+	docker compose down && docker volume rm backend_postgres_data
