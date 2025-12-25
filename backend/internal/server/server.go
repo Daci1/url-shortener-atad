@@ -6,10 +6,12 @@ import (
 	"github.com/Daci1/url-shortener-atad/internal/server/middleware"
 	echojwt "github.com/labstack/echo-jwt/v4"
 	"github.com/labstack/echo/v4"
+	echoMiddleware "github.com/labstack/echo/v4/middleware"
 )
 
 func NewServer() *echo.Echo {
 	e := echo.New()
+	e.Use(echoMiddleware.CORS())
 
 	apiV1 := e.Group("/api/v1")
 
