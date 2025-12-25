@@ -1,10 +1,17 @@
-import { Component } from '@angular/core';
-import { HomePageComponent } from './components/home-page/home-page.component';
+import {Component, OnInit} from '@angular/core';
+import {RouterOutlet} from '@angular/router';
+import {AuthService} from './services/auth.service';
 
 @Component({
   selector: 'app-root',
   standalone: true,
-  imports: [HomePageComponent],
-  template: '<app-home-page></app-home-page>',
+  imports: [RouterOutlet],
+  template: '<router-outlet></router-outlet>',
 })
-export class AppComponent {}
+export class AppComponent implements OnInit {
+  constructor(private authService: AuthService) {
+  }
+  ngOnInit() {
+    this.authService.autoLogin();
+  }
+}

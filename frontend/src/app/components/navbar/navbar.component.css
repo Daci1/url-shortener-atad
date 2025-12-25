@@ -29,3 +29,8 @@
     color: #ffc299;
     text-decoration: underline;
 }
+
+.navbar-username {
+  margin-right: 1rem;
+  font-weight: bold;
+}

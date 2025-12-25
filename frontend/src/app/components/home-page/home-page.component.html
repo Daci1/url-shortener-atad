@@ -6,13 +6,19 @@
 
     <!-- Get Started Button -->
     @if (!showUrlInput) {
-    <button class="cta-button" (click)="onGetStarted()">Get Started</button>
+      <button class="cta-button" (click)="onGetStarted()">Get Started</button>
     } @else {
     <div class="url-input-container">
       <input type="text" [(ngModel)]="urlToShorten" placeholder="Enter URL" class="url-input" />
       <button class="submit-button" (click)="shortenUrl()">Shorten URL</button>
     </div>
     }
+
+    <div *ngIf="shortenedUrl" class="shortened-url-container">
+      <label>Your shortened URL:</label>
+      <label style="margin: 0 10px;">{{ endpointPrefix + shortenedUrl }}</label>
+      <button class="submit-button" (click)="onNavigateToShortUrl()">Visit URL</button>
+    </div>
 
   </div>
 </div>

@@ -1,7 +1,12 @@
 <nav class="navbar">
   <h1 class="navbar-brand">URL Shortener</h1>
   <div class="nav-links">
-    <a href="/signin" class="nav-link">Sign In</a>
-    <a href="/signup" class="nav-link">Sign Up</a>
+    @if(!isLogged) {
+      <a routerLink="/signin" class="nav-link">Sign In</a>
+      <a routerLink="/signup" class="nav-link">Sign Up</a>
+    } @else {
+      <span class="navbar-username">{{ username }}</span>
+      <a (click)="onLogOut();" class="nav-link">Log Out</a>
+    }
   </div>
 </nav>
