@@ -3,6 +3,7 @@ package handler
 import (
 	"fmt"
 	"net/http"
+	"strings"
 
 	"github.com/Daci1/url-shortener-atad/internal/db"
 	"github.com/Daci1/url-shortener-atad/internal/helper"
@@ -40,6 +41,11 @@ func (h *UrlHandler) RedirectUrl(c echo.Context) error {
 
 	if originalUrl == "" {
 		return c.JSON(response.NewErrorResponse(http.StatusNotFound, "Short url not found"))
+	}
+
+	if !strings.HasPrefix(originalUrl, "http://") &&
+		!strings.HasPrefix(originalUrl, "https://") {
+		originalUrl = "https://" + originalUrl
 	}
 
 	return c.Redirect(http.StatusTemporaryRedirect, originalUrl)
