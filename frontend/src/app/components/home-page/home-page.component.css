@@ -92,3 +92,7 @@
   border-radius: 4px;
   color: #333;
 }
+
+.qrcode-container {
+  margin-top: 1rem;
+}

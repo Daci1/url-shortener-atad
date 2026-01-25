@@ -17,11 +17,21 @@
     </div>
     }
 
-    <div *ngIf="shortenedUrl" class="shortened-url-container">
-      <label>Your shortened URL:</label>
-      <label style="margin: 0 10px;">{{ endpointPrefix + shortenedUrl }}</label>
-      <button class="submit-button" (click)="onNavigateToShortUrl()">Visit URL</button>
-    </div>
+    @if (shortenedUrl) {
+      <div class="shortened-url-container">
+        <label>Your shortened URL:</label>
+        <label style="margin: 0 10px;">{{ endpointPrefix + shortenedUrl }}</label>
+        <button class="submit-button" (click)="onNavigateToShortUrl()">Visit URL</button>
+      </div>
+
+      <div class="qrcode-container">
+        <qrcode
+          [qrdata]="endpointPrefix + shortenedUrl"
+          [width]="200"
+          [errorCorrectionLevel]="'M'">
+        </qrcode>
+      </div>
+    }
 
   </div>
 </div>

@@ -6,10 +6,11 @@ import {AuthService} from '../../services/auth.service';
 import {UrlService} from '../../services/url.service';
 import {Subscription} from 'rxjs';
 import {environment} from '../../../environments/environment';
+import {QRCodeComponent} from 'angularx-qrcode';
 
 @Component({
   selector: 'app-home-page',
-  imports: [CommonModule, NavbarComponent, FormsModule],
+  imports: [CommonModule, NavbarComponent, FormsModule, QRCodeComponent],
   standalone: true,
   templateUrl: './home-page.component.html',
   styleUrl: './home-page.component.css'
