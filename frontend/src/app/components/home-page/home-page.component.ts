@@ -1,5 +1,4 @@
 import {Component, Input, OnDestroy, OnInit} from '@angular/core';
-import { HttpClient } from '@angular/common/http';
 import { NavbarComponent } from "../navbar/navbar.component";
 import { FormsModule } from '@angular/forms';
 import {CommonModule} from '@angular/common';
@@ -18,16 +17,17 @@ import {environment} from '../../../environments/environment';
 export class HomePageComponent implements OnInit, OnDestroy{
 
   isLogged: boolean = false;
-  urlToShorten: string = ''; // To store the URL input by the user
+  urlToShorten: string = '';
+  customUrl: string = '';
   shortenedUrl: string | null = null;
   token: string | null = null;
   loggedUserSubscription: Subscription | undefined;
   endpointPrefix: string = environment.url + 'api/v1/urls/'
 
-  @Input() showUrlInput: boolean = false; // To toggle the visibility of the Get Started flow
+  @Input() showUrlInput: boolean = false;
 
   onGetStarted(): void {
-    this.showUrlInput = true; // Make the URL input section visible
+    this.showUrlInput = true;
   }
 
   constructor(private authService: AuthService, private urlService: UrlService) { }
@@ -52,11 +52,24 @@ export class HomePageComponent implements OnInit, OnDestroy{
 
     if(this.isLogged) {
       const sub = this.authService.getLoggedSub();
-      this.urlService.loggedCreateShortUrl(this.urlToShorten, sub, this.token!).subscribe({
-        next: (res) => {
-          this.shortenedUrl = res.data.attributes.shortUrl;
-        }
-      })
+
+      const customUrlTrimmed = this.customUrl.trim();
+      if(customUrlTrimmed) {
+        this.urlService.loggedCreateCustomShortUrl(this.urlToShorten, sub, customUrlTrimmed, this.token!).subscribe({
+          next: (res) => {
+            this.shortenedUrl = res.data.attributes.shortUrl;
+          },
+          error: (err) => {
+            console.error('Error creating custom short URL:', err);
+          }
+        })
+      } else {
+        this.urlService.loggedCreateShortUrl(this.urlToShorten, sub, this.token!).subscribe({
+          next: (res) => {
+            this.shortenedUrl = res.data.attributes.shortUrl;
+          }
+        })
+      }
     } else {
       this.urlService.createShortUrl(trimmedUrl).subscribe({
         next: (res) => {

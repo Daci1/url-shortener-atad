@@ -31,4 +31,17 @@ export class UrlService {
     } as CreateUrlRequest,
       { headers: {Authorization: `Bearer ${token}`}})
   }
+
+  loggedCreateCustomShortUrl(originalUrl: string, username: string, desiredUrl: string, token: string): Observable<CreateUrlResponse> {
+    return this.http.post<CreateUrlResponse>(environment.url + `api/v1/urls/users/${username}/custom`, {
+        data: {
+          type: 'urls',
+          attributes: {
+            originalUrl,
+            desiredUrl,
+          },
+        }
+      } as CreateUrlRequest,
+      { headers: {Authorization: `Bearer ${token}`}})
+  }
 }
