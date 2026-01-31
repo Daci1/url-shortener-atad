@@ -145,3 +145,21 @@ Once inside the shell, you can run:
 
 ---
 
+## Final submission checklist
+
+| User Stories                                                           | Done |
+|------------------------------------------------------------------------|------|
+| I can customize my short link                                          | [x]  |
+| I can view statistics: total clicks, unique visitors (only backend)    | [x]  |
+| I can generate a QR code for my short link                             | [x]  |
+| I can set an expiration date for my links                              | [ ]  |
+
+
+| Technical Requirements                                                 | Done |
+|------------------------------------------------------------------------|------|
+| RESTful API with endpoints for shortening, redirecting                 | [x]  |
+| Short code generation (6-8 characters, alphanumeric)                   | [x]  |
+| Collision detection and handling                                       | [x]  |
+| Rate limiting (e.g., 10 requests/minute per IP)                        | [ ]  |
+| Web dashboard showing all links and statistics                         | [ ]  |
+| Database for URLs and click events                                     | [x]  |
